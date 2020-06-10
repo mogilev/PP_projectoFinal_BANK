@@ -4,8 +4,10 @@ public interface Transaction {
 	
 	int getTransactionId(); // Devolve o id da transacção(thread)
 	
-	int getSenderAccount(); // Devolve o Id da conta de origem
+	Account getSenderAccount(); // Devolve o Id da conta de origem
 	
-	int getReceiverAccount(); // Devolve o Id da conta de destino
+	Account getReceiverAccount(); // Devolve o Id da conta de destino
+	
+	double getTransactionAmount();
 	
 }

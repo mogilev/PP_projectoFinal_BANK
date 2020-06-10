@@ -28,20 +28,31 @@ public class TransactionClass extends Thread implements Transaction {
 	}
 
 	@Override
-	public int getSenderAccount() {
+	public Account getSenderAccount() {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.senderAccount;
 	}
 
 	@Override
-	public int getReceiverAccount() {
+	public Account getReceiverAccount() {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.receiverAccount;
+	}
+
+	@Override
+	public double getTransactionAmount() {
+		return this.transactionAmount;
 	}
 
 	
+	
 	public void run() {
 		// TODO
-		System.out.println("Teste\n " + "Thread "+ this.transactionId + " Conta origem = " + senderAccount.getAccountId() + " - Conta destino = " + receiverAccount.getAccountId() + " - Valor transferido " + String.format("%.2f", this.transactionAmount) + " - Valor total: " + bank.getTotalBalance());
+		
+		//threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId()
+		bank.internalTransfer(this.getSenderAccount(), this.getReceiverAccount(), this.getTransactionAmount(), this.getTransactionId());
+//		System.out.println("Teste\n " + "Thread "+ this.transactionId + " Conta origem = " + senderAccount.getAccountId() + " - Conta destino = " + receiverAccount.getAccountId() + " - Valor transferido " + String.format("%.2f", this.transactionAmount) + " - Valor total: " + bank.getTotalBalance());
+		
 	}
+
 }
