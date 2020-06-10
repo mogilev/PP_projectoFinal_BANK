@@ -10,7 +10,7 @@ import java.util.Random;
 
 import java.util.ArrayList;
 
-public class BankClass implements Bank{
+public class BankClass implements Bank {
 	private List<Account> accountList;
 	private int nrOfAccounts;
 	private double accountStartBalance;
@@ -22,6 +22,7 @@ public class BankClass implements Bank{
 		this.nrOfAccounts = nrOfAccounts;
 		this.accountStartBalance = accountStartBalance;
 		this.createAccount(this.nrOfAccounts, this.accountStartBalance);
+		this.createTransaction(this.nrOfAccounts);
 		
 	}
 	

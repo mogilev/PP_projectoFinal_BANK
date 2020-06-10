@@ -1,5 +1,8 @@
 import java.util.Scanner;
 
+import controllers.Bank;
+import controllers.BankClass;
+
 public class Program {
 
 	public static void main(String[] args) {
@@ -18,9 +21,9 @@ public class Program {
 		
 		
 		do {
-			System.out.println("Qual o saldo inicial de cada conta?");
+			System.out.println("Qual o saldo inicial de cada conta?(Valor mínimo = 0.01)");
 			accountStartBalance = in.nextDouble();
-		}	while (accountStartBalance <= 2);
+		}	while (accountStartBalance <= 0.01);
 		
 		
 	/*	
@@ -32,7 +35,7 @@ public class Program {
 	//	int AccountStartBalance = in.nextInt();
 	*/
 		
-	//	BankClass bankClass =  new BankClass(accountQty, AccountStartBalance);
+		Bank bank =  new BankClass(accountQty, accountStartBalance);
 		
 		
 		in.close();

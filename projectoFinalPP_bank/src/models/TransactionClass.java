@@ -42,6 +42,6 @@ public class TransactionClass extends Thread implements Transaction {
 	
 	public void run() {
 		// TODO
-		System.out.println("Teste\n " + "Thread "+ this.transactionId + " Conta origem = " + senderAccount.getAccountId() + "- Conta destino = " + receiverAccount.getAccountId() + " - Valor transferido" + String.format("%.2f", this.transactionAmount) );
+		System.out.println("Teste\n " + "Thread "+ this.transactionId + " Conta origem = " + senderAccount.getAccountId() + " - Conta destino = " + receiverAccount.getAccountId() + " - Valor transferido " + String.format("%.2f", this.transactionAmount) + " - Valor total: " + bank.getTotalBalance());
 	}
 }
