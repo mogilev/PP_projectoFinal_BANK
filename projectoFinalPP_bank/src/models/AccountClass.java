@@ -4,7 +4,7 @@ public class AccountClass implements Account {
 
 	private int accountId;
 	private double accountBalance;
-	
+	private boolean insuficientFunds= false;
 	
 	
 	public AccountClass(int accountId, double accountBalance) {
@@ -34,6 +34,7 @@ public class AccountClass implements Account {
 	public void accountTransferOut(double transferAmount) {
 		this.accountBalance -= transferAmount;	
 	}
-	
+
+
 	
 }

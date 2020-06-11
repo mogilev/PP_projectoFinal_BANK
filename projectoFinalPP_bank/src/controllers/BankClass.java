@@ -24,7 +24,7 @@ public class BankClass implements Bank {
 	private int totalTransactions = 0;
 	private double totalTransationAmount = 0.00;
 	private Lock lock = new ReentrantLock();
-	private Condition availableFund;
+	private Condition availableFund = lock.newCondition();
 	
 	
 	public BankClass(int nrOfAccounts, double accountStartBalance) {
@@ -45,6 +45,13 @@ public class BankClass implements Bank {
 			Account account = (Account) new AccountClass((i+1), accountStartBalance);
 			accountList.add((Account) account);
 			}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("teste - todas as Contas criadas");
 		return 0;
 	}
 
@@ -66,6 +73,7 @@ public class BankClass implements Bank {
 		int counter = 0; // utilizado para indicar ID a cada thread criada
 		
 		while(threadCreator) {
+			System.out.println("Inicio de um novo lote de transações"); // print de Teste
 			for (Account account: this.getAccountList()) {
 				Account senderAccount = account;
 				Account receiverAccount;
@@ -80,17 +88,30 @@ public class BankClass implements Bank {
 				value = Math.floor(value*100) / 100; // Certificamo-nos que o valor da transferência tem apenas 2 casas decimais 
 				counter++;
 				transactionsList.add(new Thread(new TransactionClass(this, counter, senderAccount, receiverAccount, value)));
-				
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
+			//bloco de teste
 			
+	/*		
+			try {
+				System.out.println("Fim de um lote de transações");
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+			//fim do bloco de teste
 			
 		}
 		threadCreatorStopper = false;
+		System.out.println("threadCreatorStopper passou a falso");
 		return;
 	}
 
-	
-	
 	
 	
 	@Override
@@ -108,7 +129,7 @@ public class BankClass implements Bank {
 	
 	@Override
 	public void transferReceipt(int transactionId, double transferAmount, int senderAccountId, int receiverAccountId) {
-		System.out.println("\n Thread nº " + transactionId);
+	//	System.out.println("\n Thread nº " + transactionId); //ver se faz sentido
 		System.out.println("Quantidade transferida: " +  transferAmount + " - de conta origem nº " + senderAccountId + " - para conta destino nº " + receiverAccountId + " - Saldo final total: " + this.getTotalBalance());
 	}
 
@@ -145,9 +166,13 @@ public class BankClass implements Bank {
 
 	@Override
 	public void executionSummary() {
-		// TODO Auto-generated method stub
+		System.out.println("************************************************************");
+		System.out.println("**      Devido à execução ter sido interrompida,          **");
+		System.out.println("** algumas transferências poderão não ter sido concluídas **");
+		System.out.println("************************************************************");
 		
-		
+		System.out.println("Foram criadas " + this.nrOfAccounts + " contas, cada uma com " + this.accountStartBalance + " euros.");
+
 		Collections.sort(accountList,
 				new Comparator<Account>() {
 				public int compare(Account a1, Account a2) {
@@ -162,10 +187,10 @@ public class BankClass implements Bank {
 		
 		System.out.println("Total de transacções realizadas: "+ this.totalTransactions);
 		System.out.println("Valor total transacionado: "+ String.format("%.2f", this.totalTransationAmount));
-		System.out.println("Conta com maior saldo: Id " + maxAccount.getAccountId()+ ", com " + String.format("%.2f",maxAccount.getAccountBalance()));
-		System.out.println("Conta com 2º maior saldo: Id "+ + maxAccount2.getAccountId()+ ", com " + String.format("%.2f",maxAccount2.getAccountBalance()));
-		System.out.println("Conta com menor saldo: Id " + minAccount.getAccountId()+ ", com " + String.format("%.2f",minAccount.getAccountBalance()));
-		System.out.println("Conta com 2º menor saldo: Id " + minAccount2.getAccountId()+ ", com " + String.format("%.2f",minAccount2.getAccountBalance()));
+		System.out.println("Conta com menor saldo: Id " + maxAccount.getAccountId()+ ", com " + String.format("%.2f",maxAccount.getAccountBalance()));
+		System.out.println("Conta com 2º menor saldo: Id "+ + maxAccount2.getAccountId()+ ", com " + String.format("%.2f",maxAccount2.getAccountBalance()));
+		System.out.println("Conta com maior saldo: Id " + minAccount.getAccountId()+ ", com " + String.format("%.2f",minAccount.getAccountBalance()));
+		System.out.println("Conta com 2º maior saldo: Id " + minAccount2.getAccountId()+ ", com " + String.format("%.2f",minAccount2.getAccountBalance()));
 	}
 
 
@@ -173,29 +198,38 @@ public class BankClass implements Bank {
 	public void internalTransfer(Account senderAccount, Account receiverAccount, double amount, int threadId) {
 
 		lock.lock();    // 1
-	
+	/*
+		senderAccount.accountTransferOut(amount);
+        receiverAccount.accountTransferIn(amount);
+        this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
+        this.totalTransactions ++; // em duplicado com bloco mais abaixo, apagar se descomentar o de baixo!!
+    	this.totalTransationAmount += amount;// em duplicado com bloco mais abaixo, apagar se descomentar o de baixo!!
+       */
+       
 		try {
-            while (senderAccount.getAccountBalance() < amount) {
+            while (!this.accountHasFunds(senderAccount.getAccountId(), amount)) {
+            System.out.println("Transferência " + "não realizada porque conta " + senderAccount.getAccountId() + " tem apenas " + senderAccount.getAccountBalance() + " - transferência agendada de " + amount);
                 availableFund.await();
-            }
+            } 
             senderAccount.accountTransferOut(amount);
             receiverAccount.accountTransferIn(amount);
-            
+            this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
         	this.totalTransactions ++;
         	this.totalTransationAmount += amount;
             
-            this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
+          //  this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
 
- 
-            availableFund.signalAll();
-            
+            	availableFund.signalAll();
+
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
+        } 
+		finally {
             lock.unlock();
-        }
+        }   
+	//	lock.unlock(); 
 		// TODO Auto-generated method stub
-		
+    //	lock.unlock();
 	}
 
 }
