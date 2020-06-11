@@ -8,6 +8,7 @@
  *No entanto, caso o utilizador queira, poderá em qualquer altura carregar em 'enter' e o programa terminará 
  *pouco tempo depois(poderá ser necessário aguardar alguns momentos) e aparecerá na consola um quadro com um resumo
  *do que foi executado.
+ *Mais informações acerca desta implementação no relatório do projecto
  *
  */
 
@@ -50,15 +51,13 @@ public class Program {
 		t.start();
 
 		
-		
 		String input = in.nextLine();
 		in.nextLine();
-		if(input.isEmpty()) {
+		if(input.isEmpty()) { // Se o utilizador decide interromper o programa, carregando no 'Enter'
 			bank.setThreadCreator(false);
 			System.out.println("\n\n\n Por solicitação do utilizador, execução será terminada.\n\n\n");
-		//		bank.setThreadCreator(false);
+
 			while(bank.getThreadCreatorStopper()==true) {
-			//	}
 
 				try {
 					java.util.concurrent.TimeUnit.SECONDS.sleep(3);
@@ -67,14 +66,15 @@ public class Program {
 					}
 			}
 				
-			System.out.println("\n\n\n\n\n\n Por solicitação do utilizador, execução foi interrompida.\n\n\n\n\n\n");
+			System.out.println("\n\n\n\n\n\n Por solicitação do utilizador, execução foi interrompida.\n\n***   Por favor aguarde pelo quadro resumo.   ***\n\n\n\n\n");
 				
 			in.close();
 			bank.executionSummary();
-			System.exit(0);
-		
-		}
-		
-}}
+			System.exit(0);	
+		}	
+	}
+	
+	
+}
 
 

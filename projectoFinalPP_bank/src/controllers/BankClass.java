@@ -50,7 +50,7 @@ public class BankClass implements Bank {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		System.out.println("teste - todas as Contas criadas");
+		System.out.println("\nCriadas " + accountQty + " contas.\n");
 		return 0;
 	}
 
@@ -69,9 +69,8 @@ public class BankClass implements Bank {
 	@Override
 	public void createTransaction(int accountQty) {
 		List<Thread> transactionsList =  new ArrayList<Thread>();
-				
+		System.out.println("** Início das transações **");	
 		while(threadCreator) {
-			System.out.println("Inicio de um novo lote de transações"); // print de Teste
 			for (Account account: this.getAccountList()) {
 				Account senderAccount = account;
 				Account receiverAccount;
@@ -86,25 +85,13 @@ public class BankClass implements Bank {
 				value += 1;
 				transactionsList.add(new Thread(new TransactionClass(this, senderAccount, receiverAccount, value)));
 				try {
-					Thread.sleep(100);
+					Thread.sleep(100); // adicinado breve período de "pausa" para ser mais fácil olhar para o output. Quanto menor o valor, mais curto será esse periodo
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-			}
-			//bloco de teste
-			
-	/*		
-			try {
-				System.out.println("Fim de um lote de transações");
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}*/
-			//fim do bloco de teste
-			
+			}	
 		}
-		threadCreatorStopper = false;
-		System.out.println("threadCreatorStopper passou a falso");
+		threadCreatorStopper = false; // booleano de controlo da interrupção das transferências
 		return;
 	}
 
@@ -130,7 +117,6 @@ public class BankClass implements Bank {
 		receiverBalance = receiverBalance/100;
 		
 		System.out.println("Quantidade transferida: " +  formatter.format(transferAmount) + " --- de conta nº " + senderAccountId + "(" + formatter.format(senderBalance) + ") --- para conta destino nº " + receiverAccountId + "(" + formatter.format(receiverBalance) + ") --- Saldo final total: " + formatter.format(this.getTotalBalance()));
-		
 	}
 
 
@@ -191,27 +177,19 @@ public class BankClass implements Bank {
 		System.out.println("2º maior saldo:   Conta nº " + maxAccount2.getAccountId() + " -- " + formatter.format(((double)maxAccount2.getAccountBalance()/100)));
 		System.out.println("Menor saldo:      Conta nº " + minAccount.getAccountId() + " -- " + formatter.format(((double)minAccount.getAccountBalance()/100)));
 		System.out.println("2º menor saldo:   Conta nº " + minAccount2.getAccountId() + " -- " + formatter.format(((double)minAccount2.getAccountBalance()/100)));
-		System.out.println("Valor total em caixa: " + ((double)this.getTotalBalance()));
-		System.out.println("Diferença do valor em caixa(em relação ao inicio): " +  formatter.format(((this.nrOfAccounts * ((double)this.accountStartBalance/100))-(this.getTotalBalance()))));
+		System.out.println("Valor total em caixa: " + formatter.format(((double)this.getTotalBalance())));
+		System.out.println("Diferença do valor em caixa(em relação ao montante inicial): " +  formatter.format(((this.nrOfAccounts * ((double)this.accountStartBalance/100))-(this.getTotalBalance()))));
 	}
 
 
 	@Override
 	public void internalTransfer(Account senderAccount, Account receiverAccount, int amount) {
 
-		lock.lock();    // 1
-	/*
-		senderAccount.accountTransferOut(amount);
-        receiverAccount.accountTransferIn(amount);
-        this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
-        this.totalTransactions ++; // em duplicado com bloco mais abaixo, apagar se descomentar o de baixo!!
-    	this.totalTransationAmount += amount;// em duplicado com bloco mais abaixo, apagar se descomentar o de baixo!!
-       */
-       
+		lock.lock();    // 1    
 		try {
             while (!this.accountHasFunds(senderAccount.getAccountId(), amount)) {
-        //    System.out.println("Transferência não realizada porque a conta " + senderAccount.getAccountId() + " tem apenas " + ((double)senderAccount.getAccountBalance()/100) + " - transferência agendada de " + ((double)amount/100)); //print de teste
-                availableFund.await(); // Aguarda caso não tenha saldo suficiente
+        //  System.out.println("Transferência não realizada porque a conta " + senderAccount.getAccountId() + " tem apenas " + ((double)senderAccount.getAccountBalance()/100) + " - transferência agendada de " + ((double)amount/100)); //print de teste para quando a thread fica a aguardar na condição
+                availableFund.await(); // Aguarda caso não tenha saldo suficiente, largando o controlo do lock
             } 
             senderAccount.accountTransferOut(amount);
             receiverAccount.accountTransferIn(amount);
@@ -219,8 +197,6 @@ public class BankClass implements Bank {
         	this.totalTransactions ++;
         	this.totalTransationAmount += amount;
             
-          //  this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
-
             availableFund.signalAll(); // Sinaliza que efectuou a transferência com sucesso, para que as threads que aguardam saldo possam voltar a tentar
 
         } catch (InterruptedException e) {
@@ -229,8 +205,6 @@ public class BankClass implements Bank {
 		finally {
             lock.unlock();
         }   
-	//	lock.unlock(); 
-
 	}
 
 }
