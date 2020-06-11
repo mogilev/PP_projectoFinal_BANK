@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,29 +20,27 @@ import java.util.Comparator;
 public class BankClass implements Bank {
 	private List<Account> accountList;
 	private int nrOfAccounts;
-	private double accountStartBalance;
+	private int accountStartBalance;
 	private boolean threadCreator = true;
 	private boolean threadCreatorStopper = true;
 	private int totalTransactions = 0;
-	private double totalTransationAmount = 0.00;
+	private int totalTransationAmount = 0;
 	private Lock lock = new ReentrantLock();
 	private Condition availableFund = lock.newCondition();
+	NumberFormat formatter = new DecimalFormat("#0.00");
 	
 	
-	public BankClass(int nrOfAccounts, double accountStartBalance) {
+	public BankClass(int nrOfAccounts, int accountStartBalance) {
 		this.accountList = new ArrayList<Account>();
 		this.nrOfAccounts = nrOfAccounts;
 		this.accountStartBalance = accountStartBalance;
 		this.createAccount(this.nrOfAccounts, this.accountStartBalance);
-	//	this.createTransaction(this.nrOfAccounts);
-		
-		
 		
 	}
 	
 
 	@Override
-	public int createAccount(int accountQty, double accountStartBalance) {
+	public int createAccount(int accountQty, int accountStartBalance) {
 		for (int i = 0; i < accountQty; i++) {
 			Account account = (Account) new AccountClass((i+1), accountStartBalance);
 			accountList.add((Account) account);
@@ -48,7 +48,6 @@ public class BankClass implements Bank {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("teste - todas as Contas criadas");
@@ -60,18 +59,17 @@ public class BankClass implements Bank {
 	public double getTotalBalance() {
 		double totalBalance = 0.0;
 		for (Account account: this.getAccountList()) {
-			double amount = account.getAccountBalance();
+			int amount = account.getAccountBalance();
 			totalBalance += amount;
 		}
+		totalBalance = totalBalance/100;
 		return totalBalance;
 	}
 
 	@Override
 	public void createTransaction(int accountQty) {
-		// TODO Auto-generated method stub
 		List<Thread> transactionsList =  new ArrayList<Thread>();
-		int counter = 0; // utilizado para indicar ID a cada thread criada
-		
+				
 		while(threadCreator) {
 			System.out.println("Inicio de um novo lote de transações"); // print de Teste
 			for (Account account: this.getAccountList()) {
@@ -83,11 +81,10 @@ public class BankClass implements Bank {
 				receiverId +=1; // Escolhemos, aleatoriamente, o Id da conta de destino
 				receiverAccount = this.findAccount(receiverId); 
 				
-				Random randomAmount = new Random();		
-				double value = 0.01 + (this.accountStartBalance - 0.01) * randomAmount.nextDouble(); // Geramos quantidade aleatória para ser transferida, entre 0.01 e o valor máximo definido inicialmente pelo utilizador.
-				value = Math.floor(value*100) / 100; // Certificamo-nos que o valor da transferência tem apenas 2 casas decimais 
-				counter++;
-				transactionsList.add(new Thread(new TransactionClass(this, counter, senderAccount, receiverAccount, value)));
+				Random randomAmount = new Random();	
+				int value = randomAmount.nextInt(this.accountStartBalance);
+				value += 1;
+				transactionsList.add(new Thread(new TransactionClass(this, senderAccount, receiverAccount, value)));
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
@@ -101,7 +98,6 @@ public class BankClass implements Bank {
 				System.out.println("Fim de um lote de transações");
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}*/
 			//fim do bloco de teste
@@ -115,7 +111,7 @@ public class BankClass implements Bank {
 	
 	
 	@Override
-	public boolean accountHasFunds(int accountId, double amount) {
+	public boolean accountHasFunds(int accountId, int amount) {
 		for (Account account : this.getAccountList()) {
 			if (account.getAccountId() == accountId) {
 				if (account.getAccountBalance() >= amount) {
@@ -128,9 +124,13 @@ public class BankClass implements Bank {
 
 	
 	@Override
-	public void transferReceipt(int transactionId, double transferAmount, int senderAccountId, int receiverAccountId) {
-	//	System.out.println("\n Thread nº " + transactionId); //ver se faz sentido
-		System.out.println("Quantidade transferida: " +  transferAmount + " - de conta origem nº " + senderAccountId + " - para conta destino nº " + receiverAccountId + " - Saldo final total: " + this.getTotalBalance());
+	public void transferReceipt(double transferAmount, int senderAccountId, double senderBalance, int receiverAccountId, double receiverBalance) {
+		transferAmount = transferAmount/100;
+		senderBalance = senderBalance/100;
+		receiverBalance = receiverBalance/100;
+		
+		System.out.println("Quantidade transferida: " +  formatter.format(transferAmount) + " --- de conta nº " + senderAccountId + "(" + formatter.format(senderBalance) + ") --- para conta destino nº " + receiverAccountId + "(" + formatter.format(receiverBalance) + ") --- Saldo final total: " + formatter.format(this.getTotalBalance()));
+		
 	}
 
 
@@ -142,7 +142,6 @@ public class BankClass implements Bank {
 
 	@Override
 	public Account findAccount(int accountId) {
-		// TODO Auto-generated method stub
 		for (Account account: this.getAccountList()) {
 			if (account.getAccountId() == accountId) {
 				return account;
@@ -171,12 +170,13 @@ public class BankClass implements Bank {
 		System.out.println("** algumas transferências poderão não ter sido concluídas **");
 		System.out.println("************************************************************");
 		
-		System.out.println("Foram criadas " + this.nrOfAccounts + " contas, cada uma com " + this.accountStartBalance + " euros.");
+		System.out.println("Foram criadas " + this.nrOfAccounts + " contas, cada uma com " + formatter.format(((double)this.accountStartBalance/100)) + " euros.");
+		System.out.println("Valor inicial em caixa: " + formatter.format((this.nrOfAccounts * ((double)this.accountStartBalance/100))) + " euros.");
 
 		Collections.sort(accountList,
 				new Comparator<Account>() {
 				public int compare(Account a1, Account a2) {
-					return Double.compare(a1.getAccountBalance(), a2.getAccountBalance());
+					return Integer.compare(a2.getAccountBalance(), a1.getAccountBalance());
 				}
 		});
 		Account maxAccount = this.getAccountList().get(0);
@@ -186,16 +186,18 @@ public class BankClass implements Bank {
 		Account minAccount2 = this.getAccountList().get(getAccountList().size()-2);
 		
 		System.out.println("Total de transacções realizadas: "+ this.totalTransactions);
-		System.out.println("Valor total transacionado: "+ String.format("%.2f", this.totalTransationAmount));
-		System.out.println("Conta com menor saldo: Id " + maxAccount.getAccountId()+ ", com " + String.format("%.2f",maxAccount.getAccountBalance()));
-		System.out.println("Conta com 2º menor saldo: Id "+ + maxAccount2.getAccountId()+ ", com " + String.format("%.2f",maxAccount2.getAccountBalance()));
-		System.out.println("Conta com maior saldo: Id " + minAccount.getAccountId()+ ", com " + String.format("%.2f",minAccount.getAccountBalance()));
-		System.out.println("Conta com 2º maior saldo: Id " + minAccount2.getAccountId()+ ", com " + String.format("%.2f",minAccount2.getAccountBalance()));
+		System.out.println("Valor total transacionado: " + ((double)this.totalTransationAmount/100));
+		System.out.println("Maior saldo:      Conta nº " + maxAccount.getAccountId() + " -- " + formatter.format(((double)maxAccount.getAccountBalance()/100)));
+		System.out.println("2º maior saldo:   Conta nº " + maxAccount2.getAccountId() + " -- " + formatter.format(((double)maxAccount2.getAccountBalance()/100)));
+		System.out.println("Menor saldo:      Conta nº " + minAccount.getAccountId() + " -- " + formatter.format(((double)minAccount.getAccountBalance()/100)));
+		System.out.println("2º menor saldo:   Conta nº " + minAccount2.getAccountId() + " -- " + formatter.format(((double)minAccount2.getAccountBalance()/100)));
+		System.out.println("Valor total em caixa: " + ((double)this.getTotalBalance()));
+		System.out.println("Diferença do valor em caixa(em relação ao inicio): " +  formatter.format(((this.nrOfAccounts * ((double)this.accountStartBalance/100))-(this.getTotalBalance()))));
 	}
 
 
 	@Override
-	public void internalTransfer(Account senderAccount, Account receiverAccount, double amount, int threadId) {
+	public void internalTransfer(Account senderAccount, Account receiverAccount, int amount) {
 
 		lock.lock();    // 1
 	/*
@@ -208,18 +210,18 @@ public class BankClass implements Bank {
        
 		try {
             while (!this.accountHasFunds(senderAccount.getAccountId(), amount)) {
-            System.out.println("Transferência " + "não realizada porque conta " + senderAccount.getAccountId() + " tem apenas " + senderAccount.getAccountBalance() + " - transferência agendada de " + amount);
-                availableFund.await();
+        //    System.out.println("Transferência não realizada porque a conta " + senderAccount.getAccountId() + " tem apenas " + ((double)senderAccount.getAccountBalance()/100) + " - transferência agendada de " + ((double)amount/100)); //print de teste
+                availableFund.await(); // Aguarda caso não tenha saldo suficiente
             } 
             senderAccount.accountTransferOut(amount);
             receiverAccount.accountTransferIn(amount);
-            this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
+            this.transferReceipt((double)amount, senderAccount.getAccountId(), (double)senderAccount.getAccountBalance(), receiverAccount.getAccountId(), (double)receiverAccount.getAccountBalance());
         	this.totalTransactions ++;
         	this.totalTransationAmount += amount;
             
           //  this.transferReceipt(threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId());
 
-            	availableFund.signalAll();
+            availableFund.signalAll(); // Sinaliza que efectuou a transferência com sucesso, para que as threads que aguardam saldo possam voltar a tentar
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -228,8 +230,7 @@ public class BankClass implements Bank {
             lock.unlock();
         }   
 	//	lock.unlock(); 
-		// TODO Auto-generated method stub
-    //	lock.unlock();
+
 	}
 
 }

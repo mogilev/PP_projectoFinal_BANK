@@ -2,33 +2,32 @@ package controllers;
 
 import java.util.List;
 import models.Account;
-import models.Transaction;
 
 public interface Bank {
 	
-	int createAccount(int accountQty, double accountStartBalance); //Adiciona contas, cada uma com uma quantia inicial predefinida)
+	int createAccount(int accountQty, int accountStartBalance); //Adiciona contas indicadas pelo utilizador, cada uma com uma quantia inicial predefinida(também escolhida pelo utilizador)
 	
 	double getTotalBalance(); // Devolve o saldo total existente no banco
 	
-	void setThreadCreator(boolean permission);
+	void setThreadCreator(boolean permission); // Booleano de controlo de um ciclo
 	
-	boolean getThreadCreatorStopper(); 
+	boolean getThreadCreatorStopper(); // Booleano de controlo de um ciclo
 	
 	void createTransaction(int accountQty); // Adiciona transações 
 	
-	void internalTransfer(Account senderAccount, Account receiverAccount, double amount, int threadId);
+	void internalTransfer(Account senderAccount, Account receiverAccount, int amount); // Executa a transferência entre duas contas. Caso a conta de origem não tenha fundos suficientes, fica a aguardar até a poder realizar 
 
-	boolean accountHasFunds(int accountId, double amount); // Verifica se determinada conta de origem tem saldo suficiente para transferir fundos
+	boolean accountHasFunds(int accountId, int amount); // Verifica se determinada conta de origem tem saldo suficiente para transferir fundos
 	
-	void transferReceipt(int transactionId, double transferAmount,int senderAccountId, int receiverAccountId); // Escreve, no ecrãn, os dados acerca da transferência efectuada 
+	void transferReceipt(double transferAmount,int senderAccountId, double senderBalance, int receiverAccountId, double receiverBalance); // Escreve, no ecrã, os dados acerca da transferência efectuada 
 
-	void executionSummary();
+	void executionSummary(); // Escreve, no ecrã, um resumo dos dados executados 
 	
 	// Manuseamento da lista:
 
-	Account findAccount(int accountId);
+	Account findAccount(int accountId); // Devolve o objecto conta através do seu Id
 	
-	List<Account> getAccountList(); //// Devolve o conjunto de contas existentes	
+	List<Account> getAccountList(); // Devolve a lista de contas existentes	
 	
 
 	

@@ -5,15 +5,13 @@ import controllers.Bank;
 public class TransactionClass extends Thread implements Transaction {
 	
 	Bank bank;
-	private int transactionId;
 	private Account senderAccount;
 	private Account receiverAccount;
-	private double transactionAmount;
+	private int transactionAmount;
 	
 	
-	public TransactionClass(Bank bank, int transactionId, Account senderAccount, Account receiverAccount, double transactionAmount) {
+	public TransactionClass(Bank bank, Account senderAccount, Account receiverAccount, int transactionAmount) {
 		this.bank = bank;
-		this.transactionId = transactionId;
 		this.senderAccount = senderAccount;
 		this.receiverAccount = receiverAccount;
 		this.transactionAmount = transactionAmount;
@@ -22,37 +20,25 @@ public class TransactionClass extends Thread implements Transaction {
 	
 
 	@Override
-	public int getTransactionId() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public Account getSenderAccount() {
-		// TODO Auto-generated method stub
 		return this.senderAccount;
 	}
 
 	@Override
 	public Account getReceiverAccount() {
-		// TODO Auto-generated method stub
 		return this.receiverAccount;
 	}
 
 	@Override
-	public double getTransactionAmount() {
+	public int getTransactionAmount() {
 		return this.transactionAmount;
 	}
 
 	
+	public void run() { // Executa este bloco de código através de uma thread dedicada
+		
+		bank.internalTransfer(this.getSenderAccount(), this.getReceiverAccount(), this.getTransactionAmount()); // Executa uma transferência interna
 	
-	public void run() {
-		// TODO
-		
-		//threadId, amount, senderAccount.getAccountId(), receiverAccount.getAccountId()
-		bank.internalTransfer(this.getSenderAccount(), this.getReceiverAccount(), this.getTransactionAmount(), this.getTransactionId());
-//		System.out.println("Teste\n " + "Thread "+ this.transactionId + " Conta origem = " + senderAccount.getAccountId() + " - Conta destino = " + receiverAccount.getAccountId() + " - Valor transferido " + String.format("%.2f", this.transactionAmount) + " - Valor total: " + bank.getTotalBalance());
-		
 	}
 
 }

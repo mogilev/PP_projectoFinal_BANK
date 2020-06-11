@@ -24,8 +24,7 @@ public class Program {
 		Scanner in = new Scanner(System.in);
 		
 		int accountQty;
-		double accountStartBalance;
-		
+		double dAccountStartBalance;
 		
 		do {
 			System.out.println("Quantas contas pretende adicionar?(Mínimo 2)");
@@ -35,9 +34,11 @@ public class Program {
 		
 		do {
 			System.out.println("Qual o saldo inicial de cada conta?(Valor mínimo = 0.01)");
-			accountStartBalance = in.nextDouble();
-		}	while (accountStartBalance <= 0.01);
-				
+			dAccountStartBalance = in.nextDouble();
+		}	while (dAccountStartBalance <= 0.01);
+		
+		dAccountStartBalance = dAccountStartBalance*100;
+		int accountStartBalance = (int) dAccountStartBalance;
 		Bank bank =  new BankClass(accountQty, accountStartBalance);
 		
 		int accQty = accountQty;
@@ -50,29 +51,28 @@ public class Program {
 
 		
 		
-			String input = in.nextLine();
-			in.nextLine();
-			if(input.isEmpty()) {
-				bank.setThreadCreator(false);
-				System.out.println("\n\n\n\n\n\n Por solicitação do utilizador, execução será terminada.\n\n\n\n\n\n");
+		String input = in.nextLine();
+		in.nextLine();
+		if(input.isEmpty()) {
+			bank.setThreadCreator(false);
+			System.out.println("\n\n\n Por solicitação do utilizador, execução será terminada.\n\n\n");
 		//		bank.setThreadCreator(false);
-				while(bank.getThreadCreatorStopper()==true) {
+			while(bank.getThreadCreatorStopper()==true) {
 			//	}
 
 				try {
 					java.util.concurrent.TimeUnit.SECONDS.sleep(3);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
+					}
 			}
-				System.out.println("\n\n\n\n\n\n Por solicitação do utilizador, execução foi interrompida.\n\n\n\n\n\n");
 				
+			System.out.println("\n\n\n\n\n\n Por solicitação do utilizador, execução foi interrompida.\n\n\n\n\n\n");
+				
+			in.close();
+			bank.executionSummary();
+			System.exit(0);
 		
-		in.close();
-		bank.executionSummary();
-		
-				System.exit(0);
 		}
 		
 }}
